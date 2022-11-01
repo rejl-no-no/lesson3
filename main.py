@@ -33,6 +33,8 @@ def save_books():
 #try:
 
 #except:
+#    raise HTTPError('Книга не существует')
+
 
 
 if __name__ == "__main__":
