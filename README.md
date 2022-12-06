@@ -9,11 +9,11 @@ Python 3 (установка с официального сайта)
 Все зависимости указаны в файле requirements.txt
 
 Список команд для установки вертуального окружения, установки зависимостей и запуска программы:
- 1. pip install --user pipenv [установка окружения]
- 2. cd project_folder [переход в папку с проектом]
- 3. pipenv shell [переход в виртуальное окружение]
- 4. pip install -r requirements.txt [установка необходимых пакеетов]
- 5. pipenv run python main.py [запуск скрипта]
+ 1. `pip install --user pipenv` [установка окружения]
+ 2. `cd project_folder` [переход в папку с проектом]
+ 3. `pipenv shell` [переход в виртуальное окружение]
+ 4. `pip install -r requirements.txt` [установка необходимых пакеетов]
+ 5. `pipenv run python main.py` [запуск скрипта]
 
 ### Аргументы
 
