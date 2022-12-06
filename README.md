@@ -14,6 +14,8 @@ Python 3 (установка с официального сайта)
  3. `pipenv shell` [переход в виртуальное окружение]
  4. `pip install -r requirements.txt` [установка необходимых пакеетов]
  5. `pipenv run python main.py` [запуск скрипта]
+![123](https://user-images.githubusercontent.com/96285491/205923036-f234ac95-1fcf-4bc2-9a3b-a9409b280a27.png)
+
 
 ### Аргументы
 
@@ -26,12 +28,15 @@ Python 3 (установка с официального сайта)
 ### Проверка результата
 
 В папке со скриптом появится 2 новых каталога:
+ ![1234](https://user-images.githubusercontent.com/96285491/205922982-8ed7178e-7e64-4aac-9741-3b60bbb883d4.png)
  1. `books` - В папке появятся скаченные книги
+ ![12345](https://user-images.githubusercontent.com/96285491/205922889-6f28394b-3633-4c94-bef8-9e88459b291e.png)
  2. `images` - В папке появятся обложки книг
+ ![123456](https://user-images.githubusercontent.com/96285491/205922937-bebd4d6d-050d-476f-ae52-b3f232aed54a.png)
+
 
 ### Цель проекта
 
 Код написан в образовательных целях на онлайн-курсе для веб-разработчиков [dvmn.org](https://dvmn.org/).
 
-![image](https://user-images.githubusercontent.com/96285491/205921505-ba8d93ec-3702-4152-89b9-f0b18d0e3159.png)
 
