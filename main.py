@@ -15,36 +15,34 @@ def check_for_redirect(response):
         raise HTTPError()
 
 
-def download_txt(parser_page, counter, download_response, folder="books/"):
+def download_txt(title_name, counter, download_response, folder="books/"):
 
-    if not os.path.exists(folder):
-        os.makedirs(folder)
+    os.makedirs(folder, exist_ok=True)
 
-    with open(f'{folder}{counter}. {parser_page["title_name"]}.txt', "wb") as file:
+    with open(f'{folder}{counter}. {title_name}.txt', "wb") as file:
         file.write(download_response.content)
 
 
-def download_image(parser_page, folder="images/"):
+def download_image(image_url, image_name, folder="images/"):
 
-    if not os.path.exists(folder):
-        os.makedirs(folder)
+    os.makedirs(folder, exist_ok=True)
 
-    response = requests.get(parser_page["image_url"])
+    response = requests.get(image_url)
     response.raise_for_status()
 
-    with open(f'{folder}{parser_page["image_name"]}', "wb") as file:
+    with open(f'{folder}{image_name}', "wb") as file:
         file.write(response.content)
 
 
-def parse_book_page(soup, url):
+def parse_book_page(soup, page_url):
 
     body_text = soup.find("h1").text.split("::")
     title_name, author_name = body_text
 
-    short_url_image = soup.find(class_="bookimage").find("img")["src"]
-    image_url = urljoin(url, short_url_image)
-    split_url_image = urllib.parse.urlsplit(image_url)
-    path = split_url_image[-3]
+    short_image_url = soup.find(class_="bookimage").find("img")["src"]
+    image_url = urljoin(page_url, short_image_url)
+    splitted_image_url = urllib.parse.urlsplit(image_url)
+    path = splitted_image_url[-3]
     image_name = path.split("/")[-1]
 
     book_genre_tag = (
@@ -87,21 +85,17 @@ if __name__ == "__main__":
             url_response = requests.get(page_url)
             url_response.raise_for_status()
 
-
             soup = BeautifulSoup(url_response.text, "lxml")
 
-            try:
-                check_for_redirect(download_response)
-                check_for_redirect(url_response)  
-            except HTTPError:
-                print(f"Книга №{counter} не найдена.")
-            else:
-                parser_page = parse_book_page(soup, url)
-                download_txt(parser_page, counter, download_response)
-                download_image(parser_page, folder="images/")
+            check_for_redirect(download_response)
+            check_for_redirect(url_response)  
 
         except requests.exceptions.ConnectionError:
             print("Сбой сети!")
             time.sleep(2)
         except requests.exceptions.HTTPError:
-            print("Страница не найднена!")
+            print(f"Страница {counter} не найднена!")
+        else:
+            page_content = parse_book_page(soup, page_url)
+            download_txt(page_content["title_name"], counter, download_response)
+            download_image(page_content["image_url"], page_content["image_name"], folder="images/")
