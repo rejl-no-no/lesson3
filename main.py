@@ -90,12 +90,12 @@ if __name__ == "__main__":
             check_for_redirect(download_response)
             check_for_redirect(url_response)  
 
+            page_content = parse_book_page(soup, page_url)
+            download_txt(page_content["title_name"], counter, download_response)
+            download_image(page_content["image_url"], page_content["image_name"], folder="images/")
+
         except requests.exceptions.ConnectionError:
             print("Сбой сети!")
             time.sleep(2)
         except requests.exceptions.HTTPError:
             print(f"Страница {counter} не найднена!")
-        else:
-            page_content = parse_book_page(soup, page_url)
-            download_txt(page_content["title_name"], counter, download_response)
-            download_image(page_content["image_url"], page_content["image_name"], folder="images/")
