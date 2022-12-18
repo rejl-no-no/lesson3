@@ -37,12 +37,13 @@ def download_image(image_url, image_name, dest_folder, folder_img="images/"):
 
 def parse_book_page(soup, page_url):
 
-    body_text_selector = ('h1')
-    for body_text in soup.select(body_text_selector):
-        title_name, author_name = body_text.text.split("::")
+    body_text_selector = ('h1')    
+    title_name, author_name =  soup.select_one(body_text_selector).text.split("::")
+
 
     image_url_selector = ('.bookimage img')
-    short_image_url = soup.select(image_url_selector)[0]['src']
+    short_image_url = soup.select_one(image_url_selector)['src']
+
 
     image_url = urljoin(page_url, short_image_url)
     splitted_image_url = urllib.parse.urlsplit(image_url)
@@ -68,11 +69,11 @@ def parse_book_page(soup, page_url):
 
 
 def create_json(page_content):
-    books_description = json.dumps(books_specification, ensure_ascii=False,  indent=2)
 
-    with open(f"{args.dest_folder}{args.json_path}page_content_json.json", "w", encoding='utf8') as file:
-        
-        file.write(books_description)
+    out_file = open(f"{args.dest_folder}{args.json_path}page_content_json.json", "w", encoding='utf8')
+    json.dump(books_specification, out_file, ensure_ascii=False,  indent=2)
+    out_file.close()
+
 
 
 if __name__ == "__main__":
@@ -96,51 +97,52 @@ if __name__ == "__main__":
         try:
             url_response = requests.get(fantastic_url)
             url_response.raise_for_status()
+            check_for_redirect(url_response)
 
         except requests.exceptions.ConnectionError:
             print("Сбой сети!")
             time.sleep(2)
         except requests.exceptions.HTTPError:
-            print(f"Страница {book_id} не найднена!")
+            print(f"Страница не найднена!")
+        else:
+            fantastic_soup = BeautifulSoup(url_response.text, "lxml")
 
-        fantastic_soup = BeautifulSoup(url_response.text, "lxml")
+            pages_id = fantastic_soup.select(".bookimage a")
 
-        pages_id = fantastic_soup.select(".bookimage a")
+            for page in pages_id:
 
-        for page in pages_id:
+                page_url = urljoin(url, page['href'])
 
-            page_url = urljoin(url, page['href'])
+                try:
+                    url_response = requests.get(page_url)
+                    url_response.raise_for_status()
 
-            try:
-                url_response = requests.get(page_url)
-                url_response.raise_for_status()
+                    soup = BeautifulSoup(url_response.text, "lxml")
 
-                soup = BeautifulSoup(url_response.text, "lxml")
+                    book_id_selector = '.r_comm input[name="bookid"]'
+                    book_id = soup.select_one(book_id_selector)['value']
 
-                book_id_selector = '.r_comm input[name="bookid"]'
-                book_id = soup.select(book_id_selector)[0]['value']
+                    download_payload = {"id":f"{book_id}"}
 
-                download_payload = {"id":f"{book_id}"}
+                    download_response = requests.get(urljoin(url,"txt.php"), params = download_payload)
+                    download_response.raise_for_status()
 
-                download_response = requests.get(urljoin(url,"txt.php"), params = download_payload)
-                download_response.raise_for_status()
+                    check_for_redirect(download_response)
+                    check_for_redirect(url_response)
 
-                check_for_redirect(download_response)
-                check_for_redirect(url_response)
+                    page_content = parse_book_page(soup, page_url) 
 
-                page_content = parse_book_page(soup, page_url) 
+                    if not args.skip_txt:
+                        download_txt(page_content["title_name"], book_id, download_response, args.dest_folder)
+                    if not args.skip_imgs:
+                        download_image(page_content["image_url"], page_content["image_name"], args.dest_folder)
 
-                if not args.skip_txt:
-                    download_txt(page_content["title_name"], book_id, download_response, args.dest_folder)
-                if not args.skip_imgs:
-                    download_image(page_content["image_url"], page_content["image_name"], args.dest_folder)
+                    books_specification.append(page_content)
 
-                books_specification.append(page_content)
+                except requests.exceptions.ConnectionError:
+                    print("Сбой сети!")
+                    time.sleep(2)
+                except requests.exceptions.HTTPError:
+                    print(f"Книга {book_id} не найднена!")
 
-            except requests.exceptions.ConnectionError:
-                print("Сбой сети!")
-                time.sleep(2)
-            except requests.exceptions.HTTPError:
-                print(f"Страница {book_id} не найднена!")
-
-    create_json(page_content)
+        create_json(page_content)
