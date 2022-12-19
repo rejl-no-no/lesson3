@@ -68,12 +68,10 @@ def parse_book_page(soup, page_url):
     }
 
 
-def create_json(page_content):
+def create_json(books_specification):
 
-    out_file = open(f"{args.dest_folder}{args.json_path}page_content_json.json", "w", encoding='utf8')
-    json.dump(books_specification, out_file, ensure_ascii=False,  indent=2)
-    out_file.close()
-
+    with open(f"{args.dest_folder}{args.json_path}page_content_json.json", "w", encoding='utf8') as file:
+        json.dump(books_specification, file, ensure_ascii=False,  indent=2)
 
 
 if __name__ == "__main__":
@@ -103,7 +101,7 @@ if __name__ == "__main__":
             print("Сбой сети!")
             time.sleep(2)
         except requests.exceptions.HTTPError:
-            print(f"Страница не найднена!")
+            print("Страница не найднена!")
         else:
             fantastic_soup = BeautifulSoup(url_response.text, "lxml")
 
@@ -116,6 +114,7 @@ if __name__ == "__main__":
                 try:
                     url_response = requests.get(page_url)
                     url_response.raise_for_status()
+                    check_for_redirect(url_response)
 
                     soup = BeautifulSoup(url_response.text, "lxml")
 
@@ -126,9 +125,7 @@ if __name__ == "__main__":
 
                     download_response = requests.get(urljoin(url,"txt.php"), params = download_payload)
                     download_response.raise_for_status()
-
                     check_for_redirect(download_response)
-                    check_for_redirect(url_response)
 
                     page_content = parse_book_page(soup, page_url) 
 
@@ -145,4 +142,4 @@ if __name__ == "__main__":
                 except requests.exceptions.HTTPError:
                     print(f"Книга {book_id} не найднена!")
 
-        create_json(page_content)
+    create_json(books_specification)
